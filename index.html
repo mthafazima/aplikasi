@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manifest Unduhan — Aplikasi Ray</title>
+<meta name="description" content="Satu halaman untuk mengunduh semua aplikasi Android buatan Ray.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+  :root{
+
+    --paper:      #EDEEE5;
+    --paper-raise:#F6F7F0;
+    --ink:        #1C2420;
+    --ink-soft:   #55605A;
+    --line:       #C7CABB;
+    --stamp:      #A83A2C;
+    --stamp-soft: #A83A2C1a;
+    --tag:        #56634A;
+    --tag-soft:   #56634A1a;
+
+    --display: "Space Grotesk", sans-serif;
+    --body:    "Inter", sans-serif;
+    --mono:    "IBM Plex Mono", monospace;
+
+  }
+
+  *{ box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{
+    background:var(--stamp);
+    color:var(--paper);
+  }
+
+  a{ color:inherit; }
+
+  :focus-visible{
+    outline:2.5px solid var(--stamp);
+    outline-offset:3px;
+  }
+
+  /* ============ background texture: garis kertas manifest ============ */
+
+  .paper-lines{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 37px,
+        rgba(28,36,32,0.05) 38px
+      );
+  }
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:860px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  /* ============ header ============ */
+
+  header{
+    padding:28px 0 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+
+  header .brand{
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  /* ============ hero ============ */
+
+  .hero{
+    padding:64px 0 52px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+  }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--tag);
+    margin:0 0 18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .eyebrow::before{
+    content:"";
+    width:20px;
+    height:1px;
+    background:var(--tag);
+    display:inline-block;
+  }
+
+  h1{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(38px, 6vw, 60px);
+    line-height:1.04;
+    letter-spacing:-0.01em;
+    margin:0 0 22px;
+    max-width:11ch;
+  }
+
+  .hero p{
+    font-size:17px;
+    color:var(--ink-soft);
+    max-width:46ch;
+    margin:0;
+  }
+
+  /* stempel */
+
+  .stamp{
+    position:absolute;
+    top:56px;
+    right:8px;
+    width:126px;
+    height:126px;
+    border:2.5px solid var(--stamp);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transform:rotate(-11deg);
+    opacity:0.92;
+  }
+
+  .stamp::before{
+    content:"";
+    position:absolute;
+    inset:8px;
+    border:1px solid var(--stamp);
+    border-radius:50%;
+  }
+
+  .stamp span{
+    font-family:var(--mono);
+    font-size:11.5px;
+    font-weight:600;
+    letter-spacing:0.09em;
+    color:var(--stamp);
+    text-align:center;
+    line-height:1.5;
+    text-transform:uppercase;
+  }
+
+  @media (max-width:640px){
+    .stamp{ display:none; }
+  }
+
+  /* ============ counter bar ============ */
+
+  .counter{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:18px 0;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--ink-soft);
+    letter-spacing:0.03em;
+  }
+
+  .counter b{
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  .counter .rule{
+    flex:1;
+    height:1px;
+    background:
+      repeating-linear-gradient(
+        to right,
+        var(--line) 0 6px,
+        transparent 6px 11px
+      );
+  }
+
+  /* ============ manifest list ============ */
+
+  .manifest{
+    padding-bottom:80px;
+  }
+
+  .row{
+    display:grid;
+    grid-template-columns:96px 1fr auto;
+    align-items:center;
+    gap:22px;
+    padding:26px 4px;
+    border-bottom:1px dashed var(--line);
+    position:relative;
+    transition:background 0.15s ease;
+  }
+
+  .row:hover{
+    background:var(--paper-raise);
+  }
+
+  .row:hover .code{
+    color:var(--stamp);
+  }
+
+  /* notch perforasi kiri-kanan di tiap baris, seperti sobekan tiket */
+
+  .row::before,
+  .row::after{
+    content:"";
+    position:absolute;
+    width:14px;
+    height:14px;
+    background:var(--paper);
+    border-radius:50%;
+    left:-7px;
+  }
+
+  .row::after{
+    left:auto;
+    right:-7px;
+  }
+
+  .code{
+    font-family:var(--mono);
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    color:var(--tag);
+    transition:color 0.15s ease;
+  }
+
+  .info h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:19px;
+    margin:0 0 5px;
+    letter-spacing:-0.01em;
+  }
+
+  .info p{
+    margin:0;
+    font-size:14px;
+    color:var(--ink-soft);
+    max-width:52ch;
+  }
+
+  .actions{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:7px;
+  }
+
+  .btn-download{
+    font-family:var(--mono);
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    text-decoration:none;
+    color:var(--paper);
+    background:var(--stamp);
+    padding:11px 18px;
+    border-radius:3px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+    transition:transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .btn-download:hover{
+    transform:translateY(-1.5px);
+    box-shadow:0 4px 0 0 var(--stamp-soft);
+  }
+
+  .btn-download:active{
+    transform:translateY(0);
+  }
+
+  .link-alt{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--ink-soft);
+    text-decoration:none;
+    letter-spacing:0.02em;
+  }
+
+  .link-alt:hover{
+    color:var(--ink);
+    text-decoration:underline;
+  }
+
+  @media (max-width:640px){
+
+    .row{
+      grid-template-columns:1fr;
+      gap:12px;
+      padding:22px 4px;
+    }
+
+    .actions{
+      align-items:flex-start;
+      flex-direction:row;
+      justify-content:space-between;
+    }
+
+  }
+
+  /* ============ footer ============ */
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:26px 0 40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--ink-soft);
+    letter-spacing:0.02em;
+  }
+
+  footer .note{
+    max-width:46ch;
+  }
+
+  /* ============ reduced motion ============ */
+
+  @media (prefers-reduced-motion: reduce){
+
+    html{ scroll-behavior:auto; }
+
+    .btn-download{ transition:none; }
+
+  }
+
+</style>
+</head>
+<body>
+
+<div class="paper-lines"></div>
+
+<div class="wrap">
+
+  <header>
+    <span class="brand">RAY</span>
+    <span>Distribusi Aplikasi</span>
+  </header>
+
+  <section class="hero">
+
+    <div class="stamp"><span>Siap<br>Unduh</span></div>
+
+    <p class="eyebrow">Manifest Unduhan</p>
+
+    <h1>Semua aplikasi, satu halaman.</h1>
+
+    <p>
+      Kumpulan aplikasi Android yang aku bangun untuk beberapa masjid dan
+      mitra usaha. Pilih salah satu di bawah, lalu unduh file APK-nya
+      langsung dari Google Drive.
+    </p>
+
+  </section>
+
+  <div class="counter">
+    <span><b id="appCount">5</b> Aplikasi Tersedia</span>
+    <span class="rule"></span>
+    <span>Format · APK</span>
+  </div>
+
+  <section class="manifest" id="manifestList"></section>
+
+  <footer>
+    <span class="note">
+      APK diunduh dari luar Play Store — saat instal, aktifkan
+      "Izinkan dari sumber ini" bila muncul peringatan di HP Android kamu.
+    </span>
+    <span id="year"></span>
+  </footer>
+
+</div>
+
+<script>
+
+  /* =========================================================
+   * DAFTAR APLIKASI
+   * Tinggal tambah/ubah objek di sini kalau mau nambah aplikasi baru.
+   * driveId diambil dari URL Drive:
+   * https://drive.google.com/file/d/ >>ID<< /view
+   * ========================================================= */
+
+  const APPS = [
+
+    {
+      kode: "QMM-01",
+      nama: "Qurban Multi Masjid",
+      deskripsi: "Aplikasi pencatatan data kurban untuk banyak masjid sekaligus.",
+      driveId: "1Izocao1PXGlWR3L1y0NISK71XXP7czq5"
+    },
+    {
+      kode: "QAH-02",
+      nama: "Qurban Al-Husniyah",
+      deskripsi: "Aplikasi pencatatan data kurban khusus Masjid Al-Husniyah.",
+      driveId: "1QBA0P8ZCjApHnayIuoL3FU4iZ4YlS69T"
+    },
+    {
+      kode: "IGD-03",
+      nama: "Implan GED",
+      deskripsi: "Aplikasi pendukung sistem manajemen gudang & data pengiriman Implan.",
+      driveId: "1GyNCKWPaxpN24gQr2uAjL0nFC3hpG0lM"
+    },
+    {
+      kode: "HMS-04",
+      nama: "HMS",
+      deskripsi: "Aplikasi manajemen operasional HMS.",
+      driveId: "1Am7PlNhklUZgh5J9O4U6OVGYZvyO8zjb"
+    },
+    {
+      kode: "RSB-05",
+      nama: "Rafi Sablon",
+      deskripsi: "Aplikasi pencatatan pesanan dan produksi untuk Rafi Sablon.",
+      driveId: "1M_0mbObZiuqgTxfs28SP-VrPYZu9kt7P"
+    }
+
+  ];
+
+  function render(){
+
+    const list =
+      document.getElementById("manifestList");
+
+    document.getElementById("appCount").textContent =
+      APPS.length;
+
+    list.innerHTML =
+      APPS.map(function(app){
+
+        const downloadUrl =
+          "https://drive.google.com/uc?export=download&id=" +
+          app.driveId;
+
+        const viewUrl =
+          "https://drive.google.com/file/d/" +
+          app.driveId +
+          "/view";
+
+        return `
+          <div class="row">
+
+            <div class="code">${app.kode}</div>
+
+            <div class="info">
+              <h2>${app.nama}</h2>
+              <p>${app.deskripsi}</p>
+            </div>
+
+            <div class="actions">
+              <a class="btn-download" href="${downloadUrl}">
+                Unduh APK ↓
+              </a>
+              <a class="link-alt" href="${viewUrl}" target="_blank" rel="noopener">
+                Lihat di Drive
+              </a>
+            </div>
+
+          </div>
+        `;
+
+      }).join("");
+
+  }
+
+  render();
+
+  document.getElementById("year").textContent =
+    "© " + new Date().getFullYear() + " Ray";
+
+</script>
+
+</body>
+</html>
